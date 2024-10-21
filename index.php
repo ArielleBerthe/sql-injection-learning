@@ -1,12 +1,10 @@
 <?php
 // index.php
 
-// Conexión a la base de datos
-$servername = "localhost";
-$username = "root";
-$password = "HAUM715./cadenas";
-$dbname = "test_db";
+// Incluir el archivo de configuración
+include 'config.php';
 
+// Conexión a la base de datos
 $conn = new mysqli($servername, $username, $password, $dbname);
 
 // Verificar la conexión
@@ -17,9 +15,11 @@ if ($conn->connect_error) {
 // Obtener el nombre de usuario del formulario
 $user = $_GET['username'];
 
-// Consulta SQL vulnerable
-$sql = "SELECT * FROM users WHERE username = '$user'";
-$result = $conn->query($sql);
+// Consulta SQL segura con consultas preparadas
+$stmt = $conn->prepare("SELECT * FROM users WHERE username = ?");
+$stmt->bind_param("s", $user);
+$stmt->execute();
+$result = $stmt->get_result();
 
 if ($result->num_rows > 0) {
     while($row = $result->fetch_assoc()) {
@@ -29,6 +29,7 @@ if ($result->num_rows > 0) {
     echo "0 resultados";
 }
 
+$stmt->close();
 $conn->close();
 ?>
 
